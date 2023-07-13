@@ -1,13 +1,20 @@
 import 'dart:html';
 
+import 'package:dio/dio.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:csv/csv.dart';
 import '../../data/dummudata.dart';
+import '../../data/dummydata2.dart';
 import '../../model/model.dart';
+import '../../page/P01SumReport/P01SumReportvar.dart';
+import '../../widget/common/Safty.dart';
 
 //-------------------------------------------------
 
 DateTime selectedDate = DateTime.now();
+
+String server = 'http://172.23.10.40:15150/';
+// String server = 'http://127.0.0.1:15150/';
 
 abstract class SumReportGET_Event {}
 
@@ -27,120 +34,165 @@ class SumReportGET_Bloc extends Bloc<SumReportGET_Event, String> {
   Future<void> _SumReportGET_GET(String toAdd, Emitter<String> emit) async {
     List<reportCSV> data = [];
 
-    var input = dummydata;
-    List<String> dataname = ['PO', 'LOT'];
+    final response = await Dio().post(
+      server + "TOBEREPOR/GETDATASOI12",
+      data: {
+        "MATCP": P01SumReportvar.MAT,
+        "STARTyear": P01SumReportvar.startDATEout.year.toString(),
+        "STARTmonth": P01SumReportvar.startDATEout.month.toString(),
+        "STARTday": P01SumReportvar.startDATEout.day.toString(),
+        "ENDyear": P01SumReportvar.endDATEout.year.toString(),
+        "ENDmonth": P01SumReportvar.endDATEout.month.toString(),
+        "ENDday": P01SumReportvar.endDATEout.day.toString(),
+        // "MATCP": "24006947",
+        // "STARTyear": "2022",
+        // "STARTmonth": "12",
+        // "STARTday": "01",
+        // "ENDyear": "2023",
+        // "ENDmonth": "07",
+        // "ENDday": "11",
+      },
+    );
+
+    List<String> dataname = [
+      'PO',
+      'CUSTOMER',
+      'PART',
+      'PARTNAME',
+      'FG_CHARG',
+      'dateG',
+    ];
     List<List<String>> datacsv = [];
 
-    List<dynamic> row = [];
-    print(input.length);
-    if (input.isNotEmpty) {
-      var itemlist = input[0]['itemlist'];
-      // print(itemlist.length);
-      //------------------------------------------------------NAME
+//datadummy2
+    // var input = dummydata;
+    // var input = datadummy2;
+    // print(input.length);
+    if (response.statusCode == 200) {
+      var databuff = response.data;
+      var input = databuff;
+      if (input.isNotEmpty) {
+        var itemlist = input[0]['itemlist'];
+        print(itemlist);
+        //------------------------------------------------------NAME
 
-      for (var j = 0; j < itemlist.length; j++) {
-        if (input[0][itemlist[j].toString()] != null) {
-          if (input[0][itemlist[j].toString()]['RESULTFORMAT'].toString() ==
-              'Number') {
-            for (var k = 0;
-                k < input[0][itemlist[j].toString()]['data'].length;
-                k++) {
-              int num = 1;
-              for (var v = 0;
-                  v < input[0][itemlist[j].toString()]['data'][k].length;
-                  v++) {
-                if (v !=
-                    input[0][itemlist[j].toString()]['data'][k].length - 1) {
-                  dataname.add(
-                      '${input[0][itemlist[j].toString()]['name']}(PIC${k + 1}-POINT${num})');
-                } else {
-                  dataname.add(
-                      '${input[0][itemlist[j].toString()]['name']}(PIC${k + 1}-MEAN)');
-                }
-
-                num++;
-              }
-            }
-            dataname
-                .add('${input[0][itemlist[j].toString()]['name']}(ALL-MEAN)');
-          }
-          if (input[0][itemlist[j].toString()]['RESULTFORMAT'].toString() ==
-              'Graph') {
-            dataname.add('${input[0][itemlist[j].toString()]['name']}(X)');
-            dataname.add('${input[0][itemlist[j].toString()]['name']}(Y)');
-          }
-        }
-      }
-
-      //------------------------------------------------------NAME
-      //------------------------------------------------------data
-      for (var i = 0; i < input.length; i++) {
-        // List<String> datacsvin = [];
-        List<String> datacsvin = [input[i]['PO'].toString(), ''];
         for (var j = 0; j < itemlist.length; j++) {
-          if (input[i][itemlist[j].toString()] != null) {
-            if (input[i][itemlist[j].toString()]['RESULTFORMAT'].toString() ==
+          if (input[0][itemlist[j].toString()] != null) {
+            if (input[0][itemlist[j].toString()]['RESULTFORMAT'].toString() ==
                 'Number') {
               for (var k = 0;
-                  k < input[i][itemlist[j].toString()]['data'].length;
+                  k < input[0][itemlist[j].toString()]['data'].length;
                   k++) {
+                int num = 1;
                 for (var v = 0;
-                    v < input[i][itemlist[j].toString()]['data'][k].length;
+                    v < input[0][itemlist[j].toString()]['data'][k].length;
                     v++) {
                   if (v !=
-                      input[i][itemlist[j].toString()]['data'][k].length - 1) {
-                    datacsvin.add(
-                        '${input[i][itemlist[j].toString()]['data'][k][v]}');
+                      input[0][itemlist[j].toString()]['data'][k].length - 1) {
+                    dataname.add(
+                        '${input[0][itemlist[j].toString()]['name']}(PIC${k + 1}-POINT${num})');
                   } else {
-                    datacsvin.add(
-                        '${input[i][itemlist[j].toString()]['data'][k][v]}');
+                    dataname.add(
+                        '${input[0][itemlist[j].toString()]['name']}(PIC${k + 1}-MEAN)');
                   }
+
+                  num++;
                 }
               }
-              datacsvin.add('${input[i][itemlist[j].toString()]['data_ans']}');
-            } else if (input[i][itemlist[j].toString()]['RESULTFORMAT']
-                    .toString() ==
+              dataname
+                  .add('${input[0][itemlist[j].toString()]['name']}(ALL-MEAN)');
+            }
+            if (input[0][itemlist[j].toString()]['RESULTFORMAT'].toString() ==
                 'Graph') {
-              datacsvin
-                  .add('${input[i][itemlist[j].toString()]['data_ans']['x']}');
-              datacsvin
-                  .add('${input[i][itemlist[j].toString()]['data_ans']['y']}');
+              dataname.add('${input[0][itemlist[j].toString()]['name']}(X)');
+              dataname.add('${input[0][itemlist[j].toString()]['name']}(Y)');
             }
           }
         }
-        // print(datacsvin.length);
-        // print(dataname.length);
-        if (datacsvin.length == dataname.length) {
+
+        //------------------------------------------------------NAME
+        //------------------------------------------------------data
+        for (var i = 0; i < input.length; i++) {
+          // List<String> datacsvin = [];
+          List<String> datacsvin = [
+            input[i]['PO'].toString(),
+            input[i]['CUSTOMER'].toString(),
+            input[i]['PART'].toString(),
+            input[i]['PARTNAME'].toString(),
+            input[i]['FG_CHARG'].toString(),
+            input[i]['dateG'].toString(),
+          ];
+          for (var j = 0; j < itemlist.length; j++) {
+            if (input[i][itemlist[j].toString()] != null) {
+              if (input[i][itemlist[j].toString()]['RESULTFORMAT'].toString() ==
+                  'Number') {
+                for (var k = 0;
+                    k < input[i][itemlist[j].toString()]['data'].length;
+                    k++) {
+                  for (var v = 0;
+                      v < input[i][itemlist[j].toString()]['data'][k].length;
+                      v++) {
+                    if (v !=
+                        input[i][itemlist[j].toString()]['data'][k].length -
+                            1) {
+                      datacsvin.add(ConverstStr(
+                          '${input[i][itemlist[j].toString()]['data'][k][v]}'));
+                    } else {
+                      datacsvin.add(ConverstStr(
+                          '${input[i][itemlist[j].toString()]['data'][k][v]}'));
+                    }
+                  }
+                }
+                datacsvin
+                    .add('${input[i][itemlist[j].toString()]['data_ans']}');
+              } else if (input[i][itemlist[j].toString()]['RESULTFORMAT']
+                      .toString() ==
+                  'Graph') {
+                print("----------->");
+                datacsvin.add(ConverstStr(
+                    '${input[i][itemlist[j].toString()]['data_ans']['x']}'));
+                datacsvin.add(ConverstStr(
+                    '${input[i][itemlist[j].toString()]['data_ans']['y']}'));
+              }
+            }
+          }
+
+          // if (datacsvin.length == dataname.length) {
           datacsv.add(datacsvin);
+          // }
         }
-      }
 
-      print(datacsv);
-      //------------------------------------------------------data
+        // print(datacsv);
+        //------------------------------------------------------data
+        // print(dataname.length);
+        // print(datacsv.length);
+        // print(datacsv);
 
-      //------------------------------------------------------make csv
-      List<dynamic> row = [];
-      List<List<dynamic>> rows = [];
-      for (var s = 0; s < dataname.length; s++) {
-        row.add(dataname[s]);
-      }
-
-      rows.add(row);
-
-      for (var i = 0; i < datacsv.length; i++) {
-        List<dynamic> rowin = [];
-        for (var j = 0; j < datacsv[i].length; j++) {
-          rowin.add(datacsv[i][j]);
+        //------------------------------------------------------make csv
+        List<dynamic> row = [];
+        List<List<dynamic>> rows = [];
+        for (var s = 0; s < dataname.length; s++) {
+          row.add(dataname[s]);
         }
-        rows.add(rowin);
-      }
 
-      String datetada = "${selectedDate.toLocal()}".split(' ')[0];
-      String csv = const ListToCsvConverter().convert(rows);
-      AnchorElement(href: "data:text/plain;charset=utf-8,$csv")
-        ..setAttribute("download", "test ${datetada}.csv")
-        ..click();
-      //------------------------------------------------------make csv
+        rows.add(row);
+
+        for (var i = 0; i < datacsv.length; i++) {
+          List<dynamic> rowin = [];
+          for (var j = 0; j < datacsv[i].length; j++) {
+            rowin.add(datacsv[i][j]);
+          }
+          rows.add(rowin);
+        }
+
+        String datetada = "${selectedDate.toLocal()}".split(' ')[0];
+        String csv = const ListToCsvConverter().convert(rows);
+        AnchorElement(href: "data:text/plain;charset=utf-8,$csv")
+          ..setAttribute("download",
+              "${P01SumReportvar.MAT}-(${P01SumReportvar.startDATEout.year}-${P01SumReportvar.startDATEout.month}-${P01SumReportvar.startDATEout.day})-(${P01SumReportvar.endDATEout.year}-${P01SumReportvar.endDATEout.month}-${P01SumReportvar.endDATEout.day}).csv")
+          ..click();
+        //------------------------------------------------------make csv
+      }
     }
 
     emit('');
