@@ -24,19 +24,27 @@ class Page1BlocTableBody extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
         create: (_) => SumReportGET_Bloc(),
-        child: BlocBuilder<SumReportGET_Bloc, String>(
-          builder: (context, retdata) {
-            return Page1Body();
+        child: BlocBuilder<SumReportGET_Bloc, datauoutraw>(
+          builder: (context, datain) {
+            return Page1Body(
+              datain: datain,
+            );
           },
         ));
   }
 }
 
 class Page1Body extends StatelessWidget {
-  const Page1Body({Key? key}) : super(key: key);
+  Page1Body({
+    Key? key,
+    this.datain,
+  }) : super(key: key);
+  datauoutraw? datain = datauoutraw();
 
   @override
   Widget build(BuildContext context) {
-    return P01SumReportmain();
+    return P01SumReportmain(
+      datain: datain,
+    );
   }
 }

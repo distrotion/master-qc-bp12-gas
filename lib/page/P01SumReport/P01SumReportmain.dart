@@ -4,12 +4,19 @@ import 'package:flutter/src/widgets/placeholder.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../bloc/BlocEvent/01-SumReportGET.dart';
+import '../../widget/GRAPHPOP/POPgraph.dart';
 import '../../widget/common/Calendarwid.dart';
 import '../../widget/common/ComInputText.dart';
 import 'P01SumReportvar.dart';
 
+late BuildContext P01SumReportcontext;
+
 class P01SumReportmain extends StatefulWidget {
-  const P01SumReportmain({super.key});
+  P01SumReportmain({
+    super.key,
+    this.datain,
+  });
+  datauoutraw? datain = datauoutraw();
 
   @override
   State<P01SumReportmain> createState() => _P01SumReportmainState();
@@ -18,6 +25,9 @@ class P01SumReportmain extends StatefulWidget {
 class _P01SumReportmainState extends State<P01SumReportmain> {
   @override
   Widget build(BuildContext context) {
+    P01SumReportcontext = context;
+
+    datauoutraw _datain = widget.datain ?? datauoutraw();
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -159,6 +169,27 @@ class _P01SumReportmainState extends State<P01SumReportmain> {
               ),
             ],
           ),
+          const SizedBox(
+            height: 16,
+          ),
+          for (int i = 0; i < _datain.itemlist.length; i++) ...[
+            //
+            InkWell(
+              onTap: () {
+                LineGraphPOP(context);
+              },
+              child: Container(
+                height: 50,
+                width: 300,
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.black),
+                ),
+                child: Center(
+                  child: Text(_datain.itemobject[_datain.itemlist[i]] ?? ''),
+                ),
+              ),
+            )
+          ]
         ],
       ),
     );
